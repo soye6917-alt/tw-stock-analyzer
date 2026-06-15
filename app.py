@@ -25,6 +25,11 @@ from fundamentals import (
     generate_analysis_summary, assess_recommendation
 )
 from daily_picks import get_daily_picks_with_context, SCAN_UNIVERSE
+
+# —— 快取：每日推薦結果（避免每次重新掃描 50 檔導致超時）——
+@st.cache_data(ttl=3600, show_spinner="🔍 正在掃描 50 檔重點股(含新聞情緒分析),約需 60-90 秒...")
+def get_daily_picks_cached(top_n, months, include_news):
+    return get_daily_picks_with_context(top_n=top_n, months=months, include_news=include_news)
 from virtual_trading import (
     get_portfolio, buy_stock, sell_stock,
     get_holdings_with_prices, get_portfolio_summary,
@@ -390,8 +395,8 @@ elif mode == "🏆 每日推薦":
     st.info(f"📋 掃描範圍:{len(SCAN_UNIVERSE)} 檔市場重點股(半導體、電子、金融、傳產、航運、ETF)│含新聞情緒分析")
 
     if st.button("🚀 開始掃描評分", type="primary", use_container_width=True):
-        with st.spinner("🔍 正在掃描 50 檔重點股(含新聞情緒分析),約需 30-60 秒..."):
-            result = get_daily_picks_with_context(top_n=top_n, months=scan_months, include_news=include_news)
+        # 已移至 @st.cache_data show_spinner
+        result = get_daily_picks_cached(top_n=top_n, months=scan_months, include_news=include_news)
         picks = result["picks"]
         market_note = result["market_note"]
         market_ctx = result.get("market_ctx", {})

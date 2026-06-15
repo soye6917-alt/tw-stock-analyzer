@@ -701,6 +701,40 @@ elif mode == "🎮 虛擬交易":
     st.header("🎮 虛擬交易市場")
     st.caption("用虛擬資金 $1,000,000 練習台股買賣,即時報價,真實手續費")
 
+    # ── 自動存檔（瀏覽器 localStorage）──
+    _vt_key = "streamlit_vt_portfolio"
+    # 自動儲存：每次操作後寫入瀏覽器
+    st.components.v1.html(
+        f"""<script>try{{
+localStorage.setItem('{_vt_key}',JSON.stringify({json.dumps(st.session_state.vt_portfolio, ensure_ascii=False)}));
+}}catch(e){{}}</script>""",
+        height=0,
+    )
+    # 自動還原：首次載入時從瀏覽器讀取
+    if "vt_restored" not in st.session_state:
+        st.session_state.vt_restored = False
+    if not st.session_state.vt_restored:
+        saved = st.query_params.get("__vt_restore")
+        if saved:
+            try:
+                data = json.loads(saved)
+                if data.get("orders") and len(data["orders"]) > len(st.session_state.vt_portfolio.get("orders", [])):
+                    st.session_state.vt_portfolio = data
+                st.session_state.vt_restored = True
+                st.query_params.clear()
+                st.rerun()
+            except Exception:
+                st.session_state.vt_restored = True
+        else:
+            st.components.v1.html(
+                f"""<script>try{{
+var d=localStorage.getItem('{_vt_key}');
+if(d&&d.length>20){{var u=new URL(window.location.href);u.searchParams.set('__vt_restore',encodeURIComponent(d));window.location.replace(u.toString());}}
+}}catch(e){{}}</script>""",
+                height=0,
+            )
+            st.session_state.vt_restored = True
+
     # 快捷買入(從每日推薦跳轉用)
     if "quick_buy" in st.session_state and st.session_state.quick_buy:
         pass  # 由後續邏輯處理

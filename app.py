@@ -25,6 +25,8 @@ from fundamentals import (
     generate_analysis_summary, assess_recommendation
 )
 from daily_picks import get_daily_picks_with_context, SCAN_UNIVERSE
+from stock_screener import filter_stocks
+import pattern_recognition as pr
 
 # —— 快取：每日推薦結果（避免每次重新掃描 50 檔導致超時）——
 @st.cache_data(ttl=3600, show_spinner="🔍 正在掃描 50 檔重點股(含新聞情緒分析),約需 60-90 秒...")
@@ -89,7 +91,7 @@ with st.sidebar:
     # 功能選擇
     mode = st.radio(
         "功能模式",
-        ["📊 看盤與技術分析", "🔄 策略回測", "📋 多股掃描", "🏆 每日推薦", "🎮 虛擬交易", "🧠 分析輔助"],
+        ["📊 看盤與技術分析", "🔄 策略回測", "📋 多股掃描", "📡 選股篩選器", "🏆 每日推薦", "📐 型態辨識", "🎮 虛擬交易", "🧠 分析輔助"],
         index=0,
     )
 
@@ -372,6 +374,58 @@ elif mode == "🔄 策略回測":
 
 
 # ============================================================
+
+# ============================================================
+# 模式 4.5: 📡 選股篩選器
+# ============================================================
+elif mode == "📡 選股篩選器":
+    st.header("📡 選股篩選器")
+    st.caption("自訂條件篩選全部上市股票——價位、本益比、殖利率、成交量、技術訊號")
+
+    with st.expander("⚙️ 篩選條件", expanded=True):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            price_range = st.slider("股價範圍", 0, 2000, (0, 500))
+            vol_min = st.number_input("最低成交量(張)", 0, 100000, 1000, step=500)
+        with col2:
+            pe_range = st.slider("本益比範圍", 0, 200, (0, 50))
+            dy_range = st.slider("殖利率範圍(%)", 0, 20, (0, 15))
+        with col3:
+            tech_filter = st.selectbox("技術訊號", ["全部", "多頭", "空頭", "中立"])
+            max_stocks = st.slider("最多掃描檔數", 50, 400, 150, step=50)
+
+    if st.button("🔍 開始篩選", type="primary", use_container_width=True):
+        with st.spinner(f"正在掃描 {max_stocks} 檔股票(約需 30-60 秒)..."):
+            df = filter_stocks(
+                price_min=price_range[0], price_max=price_range[1],
+                pe_min=pe_range[0], pe_max=pe_range[1],
+                dy_min=dy_range[0], dy_max=dy_range[1],
+                vol_min=vol_min,
+                tech_signal=tech_filter if tech_filter != "全部" else None,
+                max_stocks=max_stocks,
+            )
+        if df.empty:
+            st.warning("沒有符合條件的股票，請將條件放寬")
+        else:
+            st.success(f"🟢 找到 {len(df)} 檔符合條件的股票")
+            display = df[['sid', 'name', 'price', 'change_pct', 'volume',
+                        'pe', 'div_yield', 'signal', 'rsi']].copy()
+            display.columns = ["代碼", "名稱", "價位", "變動(%)",
+                           "成交量", "PE", "殖利率(%)", "技術訊號", "RSI"]
+            display["價位"] = display["價位"].apply(lambda x: f"${x:,.2f}")
+            display["變動(%)"] = display["變動(%)"].apply(
+                lambda x: f"🟢 {x:+.2f}%" if x >= 0 else f"🔴 {x:+.2f}%")
+            display["成交量"] = display["成交量"].apply(
+                lambda x: f"{x:,}" if x >= 1000 else str(x))
+            display["PE"] = display["PE"].apply(
+                lambda x: str(round(x, 1)) if x and x > 0 else "-")
+            display["殖利率(%)"] = display["殖利率(%)"].apply(
+                lambda x: f"{x:.1f}%" if x and x > 0 else "-")
+            st.dataframe(display, use_container_width=True, hide_index=True)
+            csv = df.to_csv(index=False).encode("utf-8-sig")
+            st.download_button("⬇ 下載 CSV", csv, "stock_screener.csv",
+                              "text/csv", use_container_width=True)
+
 # 模式 4:🏆 每日推薦(專家級 Top 5)
 # ============================================================
 elif mode == "🏆 每日推薦":
@@ -700,6 +754,49 @@ elif mode == "🏆 每日推薦":
 
 
 # ============================================================
+
+# ============================================================
+# 模式 5.5: 📐 技術型態辨識
+# ============================================================
+elif mode == "📐 型態辨識":
+    st.header("📐 技術型態辨識")
+    st.caption("自動辨識型態——W底、M頭、頭肩頂/底、箱型突破")
+
+    sid = st.text_input("股票代碼", "2330", max_chars=6).strip()
+    sname = get_stock_name(sid)
+    st.caption(f"{sid} {sname}")
+
+    lookback_days = st.number_input(
+        "分析期間(日)", 30, 365, 120, step=30)
+    months = max(3, lookback_days // 30 + 1)
+    if st.button("🔍 執行型態辨識", type="primary", use_container_width=True):
+        with st.spinner("正在分析..."):
+            df = load_data(sid, months)
+            if df.empty:
+                st.error("無法取得資料")
+            else:
+                df = add_all_indicators(df)
+                patterns = pr.detect_all_patterns(df, lookback=lookback_days)
+                if not patterns:
+                    st.info("💭 無辨識到明顯的技術型態")
+                else:
+                    st.success(f"🟢 找到 {len(patterns)} 個型態")
+                    for p in patterns:
+                        conf = p.get("confidence", "中")
+                        conf_icon = {"高": "🟢", "中": "🟡", "低": "🔵"}.get(conf, "⚪")
+                        with st.expander(f"{conf_icon} {p["type"]}  (確信度:{conf})", expanded=True):
+                            info = " | ".join(
+                                f"**{k}:** {v}" for k, v in p.items()
+                                if k not in ("type", "confidence"))
+                            st.markdown(info)
+                            fig = go.Figure()
+                            fig.add_trace(go.Candlestick(
+                                x=df.index, open=df["Open"], high=df["High"],
+                                low=df["Low"], close=df["Close"], name=f"{sid} {sname}"))
+                            fig.update_layout(title=f"{sid} {sname} - {p["type"]}",
+                                              height=400, margin=dict(l=20, r=20, t=40, b=20))
+                            st.plotly_chart(fig, use_container_width=True)
+
 # 模式 5:🎮 虛擬交易
 # ============================================================
 elif mode == "🎮 虛擬交易":

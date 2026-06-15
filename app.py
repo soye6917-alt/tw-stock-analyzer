@@ -744,12 +744,49 @@ elif mode == "🎮 虛擬交易":
         """)
         
         with st.expander("⚙️ 進階操作", expanded=False):
-            st.warning("⚠️ 重設後所有交易紀錄和庫存將被清除！")
-            if st.button("🔄 重設資產組合", type="secondary"):
-                result = reset_portfolio(st.session_state.vt_portfolio)
-                if "portfolio" in result:
-                    st.session_state.vt_portfolio = result["portfolio"]
-                st.success(result["message"])
+            # 匯出 / 匯入
+            col_s, col_l, col_r = st.columns(3)
+            with col_s:
+                portfolio_json = json.dumps(
+                    st.session_state.vt_portfolio, ensure_ascii=False, indent=2
+                )
+                st.download_button(
+                    "📥 匯出資產",
+                    data=portfolio_json,
+                    file_name=f"portfolio_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
+                    mime="application/json",
+                    use_container_width=True,
+                )
+            with col_l:
+                uploaded_file = st.file_uploader(
+                    "📤 匯入資產", type=["json"], label_visibility="collapsed",
+                    key="portfolio_upload",
+                )
+                if uploaded_file:
+                    try:
+                        data = json.load(uploaded_file)
+                        # 基本驗證
+                        if "cash" in data and "holdings" in data and "orders" in data:
+                            st.session_state.vt_portfolio = data
+                            st.success("✅ 資產已從檔案載入！")
+                            st.rerun()
+                        else:
+                            st.error("❌ 檔案格式錯誤，缺少必要欄位")
+                    except Exception as e:
+                        st.error(f"❌ 載入失敗：{e}")
+            with col_r:
+                st.warning("⚠️ 重設後所有交易紀錄和庫存將被清除！")
+                if st.button("🔄 重設資產組合", type="secondary", use_container_width=True):
+                    result = reset_portfolio(st.session_state.vt_portfolio)
+                    if "portfolio" in result:
+                        st.session_state.vt_portfolio = result["portfolio"]
+                    st.success(result["message"])
+                    st.rerun()
+            
+            st.info(
+                "💡 **提示：** 資料存在瀏覽器中（Session），關閉頁面會消失。"
+                "建議定期點「匯出資產」下載備份。下次使用時點「匯入資產」還原即可。"
+            )
     
     # ─── Tab 2: 買入股票 ───
     with vtab2:

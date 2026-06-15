@@ -706,7 +706,7 @@ elif mode == "🎮 虛擬交易":
         pass  # 由後續邏輯處理
 
     # 分頁
-    vtab1, vtab2, vtab3, vtab4 = st.tabs(["💼 資產總覽", "💰 買入股票", "📂 庫存明細", "📜 交易紀錄"])
+    vtab1, vtab2, vtab3, vtab4 = st.tabs(["💼 資產總覽", "💰 買入股票", "📂 庫存明細", "📜 交易紀錄"], key="vt_tabs")
 
     # ─── Tab 1: 資產總覽 ───
     with vtab1:
@@ -999,7 +999,7 @@ elif mode == "🎮 虛擬交易":
 elif mode == "🧠 分析輔助":
     st.header(f"🧠 分析輔助 - {stock_id} {stock_name}")
 
-    tabs = st.tabs(["📊 綜合分析摘要", "📋 基本面", "🏢 三大法人", "📈 多週期技術"])
+    tabs = st.tabs(["📊 綜合分析摘要", "📋 基本面", "🏢 三大法人", "📈 多週期技術"], key="analysis_tabs")
 
     # Tab 1: 綜合分析摘要
     with tabs[0]:

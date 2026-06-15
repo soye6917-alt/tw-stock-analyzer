@@ -90,15 +90,6 @@ def search_stocks_by_name(keyword: str) -> list:
     return results[:30]
 
 
-def get_stock_name(stock_id: str) -> str:
-    """取得股票名稱（先查快取清單，再查熱門股）"""
-    stock_list = fetch_stock_list()
-    if stock_id in stock_list:
-        return stock_list[stock_id]
-    if stock_id in POPULAR_STOCKS:
-        return POPULAR_STOCKS[stock_id]
-    return stock_id
-
 SESSION = requests.Session()
 SESSION.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -107,7 +98,10 @@ SESSION.headers.update({
 
 
 def get_stock_name(stock_id: str) -> str:
-    """取得股票名稱"""
+    """取得股票名稱（先查快取清單，再查熱門股）"""
+    stock_list = fetch_stock_list()
+    if stock_id in stock_list:
+        return stock_list[stock_id]
     if stock_id in POPULAR_STOCKS:
         return POPULAR_STOCKS[stock_id]
     return stock_id

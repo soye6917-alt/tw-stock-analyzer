@@ -1010,45 +1010,45 @@ elif mode == "🧠 分析輔助":
         
         current_price = pt.get("current_price", 0)
         
-        st.markdown(
-            f"""
-            <div style="
-                background: linear-gradient(135deg, {card_color} 0%, {card_color}dd 100%);
-                border-radius: 16px;
-                padding: 24px 30px;
-                margin: 10px 0 20px 0;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <span style="font-size: 14px; color: rgba(255,255,255,0.8);">綜合評分</span>
-                        <div style="font-size: 48px; font-weight: 800; color: white; line-height: 1.1;">
-                            {score:+.0f}
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="font-size: 14px; color: rgba(255,255,255,0.8);">操作建議</span>
-                        <div style="font-size: 32px; font-weight: 700; color: white;">
-                            {emoji} {rating}
-                        </div>
+        html_card = f"""
+        <div style="
+            background: linear-gradient(135deg, {card_color} 0%, {card_color}dd 100%);
+            border-radius: 16px;
+            padding: 24px 30px;
+            margin: 10px 0 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <span style="font-size: 14px; opacity: 0.8;">綜合評分</span>
+                    <div style="font-size: 48px; font-weight: 800; line-height: 1.1;">
+                        {score:+.0f}
                     </div>
                 </div>
-                <div style="margin-top: 12px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px;">
-                    <div style="width: {(score + 100) / 2:.0f}%; height: 100%; background: white; border-radius: 3px;"></div>
-                </div>
-                <div style="display: flex; justify-content: space-around; margin-top: 16px; gap: 10px; flex-wrap: wrap;">
-                    <div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;">
-                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">現價</div>
-                        <div style="font-size: 22px; font-weight: 700; color: white;">{current_price:.2f}</div>
+                <div style="text-align: right;">
+                    <span style="font-size: 14px; opacity: 0.8;">操作建議</span>
+                    <div style="font-size: 32px; font-weight: 700;">
+                        {emoji} {rating}
                     </div>
-                    {f'<div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;"><div style="font-size: 12px; color: rgba(255,255,255,0.7);">買進區間</div><div style="font-size: 18px; font-weight: 600; color: #a8e6cf;">{buy_str}</div></div>' if buy_str else ''}
-                    {f'<div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;"><div style="font-size: 12px; color: rgba(255,255,255,0.7);">賣出區間</div><div style="font-size: 18px; font-weight: 600; color: #ffb3b3;">{sell_str}</div></div>' if sell_str else ''}
-                    {f'<div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;"><div style="font-size: 12px; color: rgba(255,255,255,0.7);">停損</div><div style="font-size: 18px; font-weight: 600; color: #ff8a80;">{stop_str}</div></div>' if stop_str else ''}
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            <div style="margin-top: 12px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px;">
+                <div style="width: {(score + 100) / 2:.0f}%; height: 100%; background: white; border-radius: 3px;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-around; margin-top: 16px; gap: 10px; flex-wrap: wrap;">
+                <div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;">
+                    <div style="font-size: 12px; opacity: 0.7;">現價</div>
+                    <div style="font-size: 22px; font-weight: 700;">{current_price:.2f}</div>
+                </div>
+                {('<div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;"><div style="font-size: 12px; opacity: 0.7;">買進區間</div><div style="font-size: 18px; font-weight: 600; color: #a8e6cf;">' + buy_str + '</div></div>') if buy_str else ''}
+                {('<div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;"><div style="font-size: 12px; opacity: 0.7;">賣出區間</div><div style="font-size: 18px; font-weight: 600; color: #ffb3b3;">' + sell_str + '</div></div>') if sell_str else ''}
+                {('<div style="text-align: center; background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 120px;"><div style="font-size: 12px; opacity: 0.7;">停損</div><div style="font-size: 18px; font-weight: 600; color: #ff8a80;">' + stop_str + '</div></div>') if stop_str else ''}
+            </div>
+        </div>
+    """
+    st.components.v1.html(html_card, height=220)
         
         # 詳細說明
         st.subheader("📋 評分明細")

@@ -294,6 +294,9 @@ def get_portfolio_summary(portfolio: dict = None) -> dict:
         if o["order_type"] == "sell"
     )
 
+    # 未實現損益 = 目前持股市值（以現價計算）- 投入成本
+    unrealized_pnl = holdings_val - total_cost
+
     return {
         "cash": round(cash, 0),
         "holdings_value": round(holdings_val, 0),
@@ -302,6 +305,7 @@ def get_portfolio_summary(portfolio: dict = None) -> dict:
         "overall_pnl": round(overall_pnl, 0),
         "overall_pnl_pct": round(overall_pnl_pct, 2),
         "realized_pnl": round(realized_pnl, 0),
+        "unrealized_pnl": round(unrealized_pnl, 0),
         "holdings_count": len(pf["holdings"]),
         "order_count": len(pf["orders"]),
     }

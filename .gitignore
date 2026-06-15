@@ -1,0 +1,7 @@
+virtual_portfolio.json
+__pycache__/
+*.pyc
+.DS_Store
+test_vt.py
+test_scan.py
+.env

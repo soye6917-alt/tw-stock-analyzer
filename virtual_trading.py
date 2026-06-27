@@ -143,8 +143,8 @@ def buy_stock(
     }
     pf["orders"].append(order)
 
-    if from_file:
-        _save_portfolio(pf)
+    # 自動存檔：無論本機/雲端模式都寫入 JSON
+    _save_portfolio(pf)
 
     msg = (
         f"✅ 買入 {stock_name}({stock_id}) {shares} 股 @ ${price:.2f}，"
@@ -221,8 +221,8 @@ def sell_stock(
     }
     pf["orders"].append(order)
 
-    if from_file:
-        _save_portfolio(pf)
+    # 自動存檔：無論本機/雲端模式都寫入 JSON
+    _save_portfolio(pf)
 
     msg = (
         f"✅ 賣出 {stock_name}({stock_id}) {shares} 股 @ ${price:.2f}，"
@@ -322,8 +322,10 @@ def reset_portfolio(portfolio: dict = None) -> dict:
     pf, from_file = _resolve_portfolio(portfolio)
     new_pf = new_portfolio()
 
+    # 無論模式都自動存檔
+    _save_portfolio(new_pf)
+
     if from_file:
-        _save_portfolio(new_pf)
         return {"success": True, "message": f"✅ 已重設！初始資金 ${STARTING_CASH:,.0f}"}
 
     # 雲端模式：回傳新的 portfolio
@@ -335,9 +337,9 @@ def reset_portfolio(portfolio: dict = None) -> dict:
 # ─────────────────────────────────────────────
 
 def _resolve_portfolio(portfolio: dict = None):
-    """解析 portfolio 來源 — 傳入 dict 就用它，否則讀檔案"""
+    """解析 portfolio 來源 — 傳入 dict 就用它（deepcopy），否則讀檔案"""
     if portfolio is not None:
-        return portfolio, False
+        return copy.deepcopy(portfolio), False
     return _load_portfolio(), True
 
 

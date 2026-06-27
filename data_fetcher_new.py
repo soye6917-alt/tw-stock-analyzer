@@ -10,8 +10,6 @@ import json
 import time
 from datetime import datetime, timedelta
 from typing import Optional
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ============================================================
 # 台股代號對照（常用股，可動態查詢）
@@ -93,7 +91,6 @@ def search_stocks_by_name(keyword: str) -> list:
 
 
 SESSION = requests.Session()
-SESSION.verify = False
 SESSION.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Accept": "application/json, text/plain, */*",
@@ -272,45 +269,19 @@ def fetch_realtime_quote(stock_id: str) -> dict:
         if "_" in raw_a:
             raw_a = raw_a.split("_")[0]
         
-        # 安全轉 float/int，處理 TWSE 回傳 "-"（暫無報價）的情況
-        def _safe_float(v, default=0.0):
-            try:
-                return float(v) if v and v != "-" else default
-            except (ValueError, TypeError):
-                return default
-        def _safe_int(v, default=0):
-            try:
-                return int(v) if v and v != "-" else default
-            except (ValueError, TypeError):
-                return default
-
-        price = _safe_float(raw_z, None)
-        # fallback: 若現價為 "-"，用買賣價中位數
-        if price is None:
-            bid_best = _safe_float(raw_b.split("_")[0] if "_" in raw_b else raw_b, None)
-            ask_best = _safe_float(raw_a.split("_")[0] if "_" in raw_a else raw_a, None)
-            if bid_best is not None and ask_best is not None:
-                price = round((bid_best + ask_best) / 2, 1)
-            elif bid_best is not None:
-                price = bid_best
-            elif ask_best is not None:
-                price = ask_best
-            else:
-                price = _safe_float(raw_o)  # 最後 fallback 到開盤價
-
         return {
             "stock_id": stock_id,
             "name": item.get("n", stock_id),
             "market": market,
-            "price": price,
-            "open": _safe_float(raw_o),
-            "high": _safe_float(raw_h),
-            "low": _safe_float(raw_l),
-            "volume": _safe_int(item.get("v", "0")),
-            "change": _safe_float(item.get("d", "0")),
-            "change_percent": _safe_float(item.get("p", "0")),
-            "bid": _safe_float(raw_b.split("_")[0] if "_" in raw_b else raw_b),
-            "ask": _safe_float(raw_a.split("_")[0] if "_" in raw_a else raw_a),
+            "price": float(raw_z) if raw_z else 0,
+            "open": float(raw_o) if raw_o else 0,
+            "high": float(raw_h) if raw_h else 0,
+            "low": float(raw_l) if raw_l else 0,
+            "volume": int(item.get("v", "0")),
+            "change": float(item.get("d", "0")),
+            "change_percent": float(item.get("p", "0")),
+            "bid": float(raw_b) if raw_b else 0,
+            "ask": float(raw_a) if raw_a else 0,
             "updated_at": datetime.now().strftime("%H:%M:%S"),
         }
     except Exception as e:

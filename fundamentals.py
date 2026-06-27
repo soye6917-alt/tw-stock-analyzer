@@ -6,9 +6,12 @@
 
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 SESSION = requests.Session()
+SESSION.verify = False
 SESSION.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
 })
@@ -18,63 +21,75 @@ def fetch_fundamentals(stock_id: str) -> dict:
     """
     取得基本面資料：本益比、殖利率、股價淨值比
     API 一次回傳全市場資料，在此過濾
+    盤中查無今日資料時自動回退到最後交易日
     """
-    today = datetime.now()
-    date_str = today.strftime("%Y%m%d")
-    url = (
-        f"https://www.twse.com.tw/rwd/zh/afterTrading/BWIBBU_d"
-        f"?date={date_str}&stockNo={stock_id}&response=json"
-    )
-    try:
-        resp = SESSION.get(url, timeout=10)
-        data = resp.json()
-        if data.get("stat") != "OK":
-            return {"error": "無法取得基本面資料"}
-        
-        # 在回傳列表中找目標股票
-        for row in data.get("data", []):
-            if row[0] == stock_id:
-                # fields: 代號, 名稱, 收盤價, 殖利率(%), 股利年度, 本益比, 股價淨值比, 財報年度/季
-                return {
-                    "stock_id": stock_id,
-                    "name": row[1].strip(),
-                    "close": float(row[2].replace(",", "")),
-                    "dividend_yield": float(row[3]) if row[3] not in ["-", "0.00"] else None,
-                    "dividend_year": row[4],
-                    "pe_ratio": float(row[5]) if row[5] not in ["-", "0.00"] else None,
-                    "pb_ratio": float(row[6]) if row[6] not in ["-", "0.00"] else None,
-                    "report_season": row[7],
-                }
-        return {"error": f"無 {stock_id} 的基本面資料"}
-    except Exception as e:
-        return {"error": f"基本面查詢失敗: {e}"}
+    # 從今天開始，往前試最多 5 個交易日
+    base = datetime.now()
+    for offset in range(7):
+        d = base - timedelta(days=offset)
+        if d.weekday() >= 5:
+            continue  # 跳過週末
+        date_str = d.strftime("%Y%m%d")
+        url = (
+            f"https://www.twse.com.tw/rwd/zh/afterTrading/BWIBBU_d"
+            f"?date={date_str}&stockNo={stock_id}&response=json"
+        )
+        try:
+            resp = SESSION.get(url, timeout=10)
+            data = resp.json()
+            if data.get("stat") != "OK":
+                continue  # 這天沒資料，換前一天
+            # 在回傳列表中找目標股票
+            for row in data.get("data", []):
+                if row[0] == stock_id:
+                    # fields: 代號, 名稱, 收盤價, 殖利率(%), 股利年度, 本益比, 股價淨值比, 財報年度/季
+                    return {
+                        "stock_id": stock_id,
+                        "name": row[1].strip(),
+                        "close": float(row[2].replace(",", "")),
+                        "dividend_yield": float(row[3]) if row[3] not in ["-", "0.00"] else None,
+                        "dividend_year": row[4],
+                        "pe_ratio": float(row[5]) if row[5] not in ["-", "0.00"] else None,
+                        "pb_ratio": float(row[6]) if row[6] not in ["-", "0.00"] else None,
+                        "report_season": row[7],
+                    }
+            return {"error": f"無 {stock_id} 的基本面資料"}
+        except Exception:
+            continue
+    return {"error": "無法取得基本面資料（連試 7 天皆失敗）"}
 
 
 def fetch_institutional_trading(stock_id: str, days: int = 5) -> pd.DataFrame:
     """
     取得三大法人買賣超
     API 回傳全市場資料，在此過濾
+    盤中查無今日資料時自動回退到最後交易日
+    注意: 必須加上 selectType=ALL 否則只回傳前 8 筆
     """
-    today = datetime.now()
-    date_str = today.strftime("%Y%m%d")
-    url = (
-        f"https://www.twse.com.tw/rwd/zh/fund/T86"
-        f"?date={date_str}&stockNo={stock_id}&response=json"
-    )
-    try:
-        resp = SESSION.get(url, timeout=10)
-        data = resp.json()
-        if data.get("stat") != "OK":
-            return pd.DataFrame()
-        
-        # 過濾出目標股票
-        for row in data.get("data", []):
-            if row[0] == stock_id:
-                return _parse_institutional_row(row)
-        return pd.DataFrame()
-    except Exception as e:
-        print(f"Institutional fetch error: {e}")
-        return pd.DataFrame()
+    base = datetime.now()
+    for offset in range(7):
+        d = base - timedelta(days=offset)
+        if d.weekday() >= 5:
+            continue
+        date_str = d.strftime("%Y%m%d")
+        url = (
+            f"https://www.twse.com.tw/rwd/zh/fund/T86"
+            f"?date={date_str}&stockNo={stock_id}&response=json&selectType=ALL"
+        )
+        try:
+            resp = SESSION.get(url, timeout=10)
+            data = resp.json()
+            if data.get("stat") != "OK":
+                continue
+            # 過濾出目標股票
+            for row in data.get("data", []):
+                if row[0] == stock_id:
+                    return _parse_institutional_row(row)
+            return pd.DataFrame()  # 有資料但沒找到這檔股票
+        except Exception as e:
+            print(f"Institutional fetch error ({date_str}): {e}")
+            continue
+    return pd.DataFrame()
 
 
 def _parse_institutional_row(row: list) -> pd.DataFrame:

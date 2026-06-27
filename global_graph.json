@@ -1,0 +1,999 @@
+{
+  "metadata": {
+    "^GSPC": {
+      "name": "S&P 500",
+      "group": "US_index",
+      "market": "USA"
+    },
+    "^DJI": {
+      "name": "道瓊",
+      "group": "US_index",
+      "market": "USA"
+    },
+    "^IXIC": {
+      "name": "那斯達克",
+      "group": "US_index",
+      "market": "USA"
+    },
+    "^SOX": {
+      "name": "費城半導體",
+      "group": "US_semiconductor",
+      "market": "USA"
+    },
+    "^RUT": {
+      "name": "羅素2000",
+      "group": "US_index",
+      "market": "USA"
+    },
+    "^N225": {
+      "name": "日經225",
+      "group": "asia_index",
+      "market": "Japan"
+    },
+    "^HSI": {
+      "name": "恆生指數",
+      "group": "asia_index",
+      "market": "HongKong"
+    },
+    "000001.SS": {
+      "name": "上證指數",
+      "group": "asia_index",
+      "market": "China"
+    },
+    "^FTSE": {
+      "name": "富時100",
+      "group": "europe_index",
+      "market": "UK"
+    },
+    "^GDAXI": {
+      "name": "德國DAX",
+      "group": "europe_index",
+      "market": "Germany"
+    },
+    "TSM": {
+      "name": "台積電ADR",
+      "group": "adr",
+      "tw_stock": "2330",
+      "adr_premium_pct": 21.206,
+      "adr_usd": 432.35,
+      "tw_twd": 2340.0,
+      "adr_converted_twd": 2836.22
+    },
+    "UMC": {
+      "name": "聯電ADR",
+      "group": "adr",
+      "tw_stock": "2303",
+      "adr_premium_pct": 2.32,
+      "adr_usd": 25.58,
+      "tw_twd": 164.0,
+      "adr_converted_twd": 167.8
+    },
+    "ASX": {
+      "name": "日月光ADR",
+      "group": "adr",
+      "tw_stock": "3711",
+      "adr_premium_pct": -58.263,
+      "adr_usd": 40.21,
+      "tw_twd": 632.0,
+      "adr_converted_twd": 263.78
+    },
+    "CL=F": {
+      "name": "原油WTI",
+      "group": "commodity"
+    },
+    "GC=F": {
+      "name": "黃金",
+      "group": "commodity"
+    },
+    "SI=F": {
+      "name": "白銀",
+      "group": "commodity"
+    },
+    "DX-Y.NYB": {
+      "name": "美元指數",
+      "group": "currency"
+    },
+    "ZN=F": {
+      "name": "10年美債",
+      "group": "bond"
+    },
+    "BTC-USD": {
+      "name": "比特幣",
+      "group": "crypto"
+    },
+    "ETH-USD": {
+      "name": "以太幣",
+      "group": "crypto"
+    },
+    "2330": {
+      "name": "台積電",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2317": {
+      "name": "鴻海",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2454": {
+      "name": "聯發科",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2308": {
+      "name": "台達電",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2412": {
+      "name": "中華電",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2881": {
+      "name": "富邦金",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2882": {
+      "name": "國泰金",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2891": {
+      "name": "中信金",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2303": {
+      "name": "聯電",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2002": {
+      "name": "中鋼",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "1301": {
+      "name": "台塑",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "1303": {
+      "name": "南亞",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "1326": {
+      "name": "台化",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "1216": {
+      "name": "統一",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "3008": {
+      "name": "大立光",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "3711": {
+      "name": "日月光投控",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "3034": {
+      "name": "聯詠",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "4904": {
+      "name": "遠傳",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "3045": {
+      "name": "台灣大",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "5880": {
+      "name": "合庫金",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2603": {
+      "name": "長榮",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2609": {
+      "name": "陽明",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2618": {
+      "name": "長榮航",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2605": {
+      "name": "新興",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "2382": {
+      "name": "廣達",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    },
+    "3231": {
+      "name": "緯創",
+      "group": "tw_stock",
+      "market": "Taiwan"
+    }
+  },
+  "edges": [
+    {
+      "source": "^GSPC",
+      "target": "^IXIC",
+      "weight": 0.9,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^GSPC",
+      "target": "^RUT",
+      "weight": 0.9,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^GSPC",
+      "target": "^DJI",
+      "weight": 0.9,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^GSPC",
+      "target": "2454",
+      "weight": 0.323,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GSPC",
+      "target": "2308",
+      "weight": 0.2865,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GSPC",
+      "target": "1301",
+      "weight": 0.2545,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GSPC",
+      "target": "1303",
+      "weight": 0.2507,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GSPC",
+      "target": "3034",
+      "weight": 0.2761,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GSPC",
+      "target": "2603",
+      "weight": 0.2882,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GSPC",
+      "target": "CL=F",
+      "weight": -0.4031,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GSPC",
+      "target": "GC=F",
+      "weight": 0.6236,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GSPC",
+      "target": "SI=F",
+      "weight": 0.5833,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GSPC",
+      "target": "DX-Y.NYB",
+      "weight": -0.6098,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GSPC",
+      "target": "ZN=F",
+      "weight": 0.5455,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GSPC",
+      "target": "BTC-USD",
+      "weight": 0.4105,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GSPC",
+      "target": "ETH-USD",
+      "weight": 0.4826,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "^IXIC",
+      "weight": 0.9,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^DJI",
+      "target": "^RUT",
+      "weight": 0.9,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^DJI",
+      "target": "2454",
+      "weight": 0.2776,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^DJI",
+      "target": "2308",
+      "weight": 0.3328,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^DJI",
+      "target": "CL=F",
+      "weight": -0.5562,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "GC=F",
+      "weight": 0.6185,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "SI=F",
+      "weight": 0.4892,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "DX-Y.NYB",
+      "weight": -0.5849,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "ZN=F",
+      "weight": 0.5862,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "BTC-USD",
+      "weight": 0.3121,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^DJI",
+      "target": "ETH-USD",
+      "weight": 0.3006,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "^RUT",
+      "weight": 0.9,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^IXIC",
+      "target": "2454",
+      "weight": 0.3102,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^IXIC",
+      "target": "3034",
+      "weight": 0.2687,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^IXIC",
+      "target": "2603",
+      "weight": 0.2517,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^IXIC",
+      "target": "CL=F",
+      "weight": -0.3418,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "GC=F",
+      "weight": 0.5803,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "SI=F",
+      "weight": 0.5682,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "DX-Y.NYB",
+      "weight": -0.5464,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "ZN=F",
+      "weight": 0.5066,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "BTC-USD",
+      "weight": 0.4183,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^IXIC",
+      "target": "ETH-USD",
+      "weight": 0.5189,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^SOX",
+      "target": "1301",
+      "weight": 0.3736,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^SOX",
+      "target": "1303",
+      "weight": 0.3305,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^SOX",
+      "target": "3034",
+      "weight": 0.3923,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^SOX",
+      "target": "2382",
+      "weight": 0.302,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^SOX",
+      "target": "3231",
+      "weight": 0.2953,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^SOX",
+      "target": "GC=F",
+      "weight": 0.4066,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^SOX",
+      "target": "SI=F",
+      "weight": 0.4137,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^SOX",
+      "target": "DX-Y.NYB",
+      "weight": -0.3954,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^SOX",
+      "target": "ZN=F",
+      "weight": 0.3229,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^SOX",
+      "target": "ETH-USD",
+      "weight": 0.3292,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "1301",
+      "weight": 0.2583,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^RUT",
+      "target": "3034",
+      "weight": 0.2505,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^RUT",
+      "target": "CL=F",
+      "weight": -0.4382,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "GC=F",
+      "weight": 0.4815,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "SI=F",
+      "weight": 0.46,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "DX-Y.NYB",
+      "weight": -0.5814,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "ZN=F",
+      "weight": 0.6137,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "BTC-USD",
+      "weight": 0.3834,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^RUT",
+      "target": "ETH-USD",
+      "weight": 0.3783,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^N225",
+      "target": "^HSI",
+      "weight": 0.8,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^N225",
+      "target": "000001.SS",
+      "weight": 0.8,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^N225",
+      "target": "2330",
+      "weight": 0.6835,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^N225",
+      "target": "2317",
+      "weight": 0.643,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^N225",
+      "target": "2454",
+      "weight": 0.4555,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2308",
+      "weight": 0.6045,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^N225",
+      "target": "2881",
+      "weight": 0.2661,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2882",
+      "weight": 0.4079,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2891",
+      "weight": 0.313,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2303",
+      "weight": 0.3292,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2002",
+      "weight": 0.3885,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "1301",
+      "weight": 0.5147,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^N225",
+      "target": "1303",
+      "weight": 0.4488,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "1326",
+      "weight": 0.4283,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "3008",
+      "weight": 0.4893,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "3711",
+      "weight": 0.5223,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^N225",
+      "target": "3034",
+      "weight": 0.4568,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "5880",
+      "weight": 0.3986,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2609",
+      "weight": 0.2777,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2618",
+      "weight": 0.4149,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "2382",
+      "weight": 0.4385,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^N225",
+      "target": "3231",
+      "weight": 0.5574,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^N225",
+      "target": "GC=F",
+      "weight": 0.3101,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^N225",
+      "target": "SI=F",
+      "weight": 0.2785,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^HSI",
+      "target": "000001.SS",
+      "weight": 0.8,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^HSI",
+      "target": "2330",
+      "weight": 0.4075,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^HSI",
+      "target": "2317",
+      "weight": 0.3983,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^HSI",
+      "target": "2002",
+      "weight": 0.2787,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^HSI",
+      "target": "3711",
+      "weight": 0.3168,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^HSI",
+      "target": "2603",
+      "weight": 0.3237,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^HSI",
+      "target": "2618",
+      "weight": 0.276,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^HSI",
+      "target": "2382",
+      "weight": 0.5384,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^HSI",
+      "target": "3231",
+      "weight": 0.5499,
+      "relation": "global_tw_high"
+    },
+    {
+      "source": "^HSI",
+      "target": "GC=F",
+      "weight": 0.2562,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^HSI",
+      "target": "SI=F",
+      "weight": 0.3202,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2330",
+      "weight": 0.3192,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2317",
+      "weight": 0.425,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2454",
+      "weight": 0.3442,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2308",
+      "weight": 0.2583,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2882",
+      "weight": 0.2948,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2002",
+      "weight": 0.3613,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "1301",
+      "weight": 0.4765,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "1303",
+      "weight": 0.2682,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "1326",
+      "weight": 0.3165,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "3711",
+      "weight": 0.3462,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "3034",
+      "weight": 0.4459,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "5880",
+      "weight": 0.2577,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "2382",
+      "weight": 0.2565,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "3231",
+      "weight": 0.3021,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "000001.SS",
+      "target": "GC=F",
+      "weight": 0.2774,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "000001.SS",
+      "target": "SI=F",
+      "weight": 0.3535,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^FTSE",
+      "target": "^GDAXI",
+      "weight": 0.7,
+      "relation": "sector_peer"
+    },
+    {
+      "source": "^FTSE",
+      "target": "CL=F",
+      "weight": -0.3705,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^FTSE",
+      "target": "GC=F",
+      "weight": 0.4518,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^FTSE",
+      "target": "SI=F",
+      "weight": 0.4526,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^FTSE",
+      "target": "DX-Y.NYB",
+      "weight": -0.3745,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^FTSE",
+      "target": "ZN=F",
+      "weight": 0.391,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "2317",
+      "weight": 0.279,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "2454",
+      "weight": 0.3114,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "2308",
+      "weight": 0.2847,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "2002",
+      "weight": 0.3501,
+      "relation": "global_tw_medium"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "CL=F",
+      "weight": -0.5931,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "GC=F",
+      "weight": 0.5898,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "SI=F",
+      "weight": 0.5044,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "DX-Y.NYB",
+      "weight": -0.3777,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "^GDAXI",
+      "target": "ZN=F",
+      "weight": 0.3862,
+      "relation": "commodity_index"
+    },
+    {
+      "source": "TSM",
+      "target": "2330",
+      "weight": 1.0,
+      "relation": "adr_premium_high"
+    },
+    {
+      "source": "UMC",
+      "target": "2303",
+      "weight": 0.116,
+      "relation": "adr_premium_low"
+    },
+    {
+      "source": "ASX",
+      "target": "3711",
+      "weight": 1.0,
+      "relation": "adr_premium_high"
+    }
+  ],
+  "built": true,
+  "built_at": "2026-06-27T23:11:00.381330"
+}

@@ -1,13 +1,2 @@
-[theme]
-base="dark"
-primaryColor="#e94560"
-
 [browser]
-gatherUsageStats=false
-
-[server]
-headless=true
-enableCORS=false
-
-[global]
-developmentMode=false
+gatherUsageStats = false

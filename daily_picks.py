@@ -9,6 +9,7 @@ import time
 import re
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from data_fetcher import (
     fetch_historical, fetch_stock_list, POPULAR_STOCKS,
@@ -526,8 +527,11 @@ def get_market_context() -> dict:
 
 def compute_entry_risk(df: pd.DataFrame, current_price: float) -> dict:
     """
-    計算進場建議、停損價、目標價
-    回傳 dict with entry_zone, entry_note, ma20, ma60, atr, stop_loss, target_1, target_2, rr_ratio
+    進階版進出場風險計算（同步專家級分析邏輯）
+    - 多重支撐/壓力（均線、布林、高低點）
+    - ATR 動態停損
+    - Fibonacci 回撤參考
+    - 風險報酬比
     """
     result = {
         "entry_zone": "⚪ 資料不足",
@@ -547,85 +551,211 @@ def compute_entry_risk(df: pd.DataFrame, current_price: float) -> dict:
         return result
 
     latest = df.iloc[-1]
-    close_series = df["Close"]
+    close = current_price
 
-    # 均線位置
+    # ── 均線 ──
+    ma5 = latest.get("MA5", 0)
+    ma10 = latest.get("MA10", 0)
     ma20 = latest.get("MA20", 0)
     ma60 = latest.get("MA60", 0)
     result["ma20_price"] = ma20
     result["ma60_price"] = ma60
-    result["support_level"] = ma60 if ma60 > 0 else ma20
-    result["resistance_level"] = ma20 if ma20 > current_price else current_price * 1.1
 
-    # ATR (Average True Range) - 波動率
+    # ── ATR ──
     if all(k in df.columns for k in ["High", "Low", "Close"]) and len(df) > 14:
-        high, low, close = df["High"].values, df["Low"].values, df["Close"].values
+        high, low, close_a = df["High"].values, df["Low"].values, df["Close"].values
         tr = np.maximum(
             high[1:] - low[1:],
             np.maximum(
-                np.abs(high[1:] - close[:-1]),
-                np.abs(low[1:] - close[:-1])
+                np.abs(high[1:] - close_a[:-1]),
+                np.abs(low[1:] - close_a[:-1])
             )
         )
         atr = np.mean(tr[-14:])
     else:
-        atr = current_price * 0.02  # 預設2%
-
+        atr = current_price * 0.02
     result["atr"] = round(atr, 2)
 
-    # 停損價:1.5倍 ATR 或跌破 MA60 (取較寬的)
-    sl_by_atr = current_price - atr * 1.5
-    sl_by_ma = ma60 * 0.97 if ma60 > 0 else current_price * 0.93
-    stop_loss = min(sl_by_atr, sl_by_ma)
-    stop_loss = max(stop_loss, current_price * 0.85)  # 最多-15%
+    # ── 布林通道 ──
+    bb_upper = latest.get("BB_Upper", 0)
+    bb_lower = latest.get("BB_Lower", 0)
+
+    # ── 支撐位計算（多重） ──
+    supports = []
+    if ma20 > 0 and close > ma20:
+        supports.append(("月線(MA20)", ma20, 5))
+    if ma60 > 0 and close > ma60:
+        supports.append(("季線(MA60)", ma60, 4))
+    if bb_lower > 0 and close > bb_lower:
+        supports.append(("布林下軌", bb_lower, 3))
+
+    low_20 = df["Low"].iloc[-20:].min() if len(df) >= 20 else 0
+    low_60 = df["Low"].iloc[-60:].min() if len(df) >= 60 else 0
+    if low_20 > 0 and low_20 < close:
+        supports.append(("近20日低點", low_20, 4))
+    if low_60 > 0 and low_60 < close and abs(low_60 - low_20) > close * 0.01:
+        supports.append(("近60日低點", low_60, 2))
+
+    # 去重排序
+    seen = set()
+    unique_supports = []
+    for name, val, pri in supports:
+        k = round(val, 1)
+        if k not in seen:
+            seen.add(k)
+            unique_supports.append((name, val, pri))
+    unique_supports.sort(key=lambda x: (-x[2], -x[1]))
+    primary_support = unique_supports[0][1] if unique_supports else close * 0.95
+
+    # ── 壓力位計算 ──
+    resistances = []
+    if ma20 > 0 and close < ma20:
+        resistances.append(("月線(MA20)", ma20, 5))
+    if ma60 > 0 and close < ma60:
+        resistances.append(("季線(MA60)", ma60, 4))
+    if bb_upper > 0 and close < bb_upper:
+        resistances.append(("布林上軌", bb_upper, 3))
+
+    high_20 = df["High"].iloc[-20:].max() if len(df) >= 20 else 0
+    high_60 = df["High"].iloc[-60:].max() if len(df) >= 60 else 0
+    if high_20 > 0 and high_20 > close:
+        resistances.append(("近20日高點", high_20, 4))
+    if high_60 > 0 and high_60 > close and abs(high_60 - high_20) > close * 0.01:
+        resistances.append(("近60日高點", high_60, 2))
+
+    seen_r = set()
+    unique_res = []
+    for name, val, pri in resistances:
+        k = round(val, 1)
+        if k not in seen_r:
+            seen_r.add(k)
+            unique_res.append((name, val, pri))
+    unique_res.sort(key=lambda x: (-x[2], x[1]))
+    primary_resistance = unique_res[0][1] if unique_res else close * 1.1
+
+    result["support_level"] = primary_support
+    result["resistance_level"] = primary_resistance
+
+    # ── Fibonacci 延伸（用於目標價上方空間）──
+    fib_ext = {}
+    if len(df) >= 60:
+        ext_low = df["Low"].iloc[-60:].min()
+        ext_high = df["High"].iloc[-60:].max()
+        ext_range = ext_high - ext_low
+        if ext_range > close * 0.02:
+            for ratio, name in [(0.618, "0.618"), (1.0, "1.000"), (1.272, "1.272"), (1.618, "1.618")]:
+                fib_ext[name] = round(ext_high + ext_range * ratio, 2)
+
+    # ── 停損價（ATR 動態） ──
+    stop_loss = close - atr * 2.0
+    sl_floor = primary_support * 0.97
+    stop_loss = max(stop_loss, sl_floor)
+    stop_loss = max(stop_loss, close * 0.85)
     result["stop_loss"] = round(stop_loss, 2)
 
-    risk_per_share = current_price - stop_loss
+    risk_per_share = close - stop_loss
 
-    # 目標價:1:1 和 1:2 風報比
-    result["target_1"] = round(current_price + risk_per_share * 1.0, 2)
-    result["target_2"] = round(current_price + risk_per_share * 2.0, 2)
+    # ════════════════════════════════════════════════════════════
+    # 更精準且符合現實的目標價
+    # 基於：實際壓力階層 + Fibonacci 延伸 + ATR 動能推估
+    # ════════════════════════════════════════════════════════════
+    target_1 = 0
+    target_2 = 0
 
+    # 收集所有壓力位（距現價由近到遠排序）
+    all_resistances = []
+    for name, val, pri in unique_res:
+        if val > close and val < close * 1.30:
+            all_resistances.append((name, val, pri))
+
+    # 加入 Fibonacci 延伸
+    for fib_name, level in fib_ext.items():
+        if level > close and level < close * 1.30:
+            all_resistances.append((f"Fib({fib_name})", level, 2))
+
+    # 去重排序（由近到遠）
+    seen_set = set()
+    unique_res_by_price = []
+    for name, val, pri in all_resistances:
+        k = round(val, 1)
+        if k not in seen_set:
+            seen_set.add(k)
+            unique_res_by_price.append((name, val, pri))
+    unique_res_by_price.sort(key=lambda x: x[1])
+
+    # ── 第一目標（保守）：最近的實際壓力位 ──
+    if unique_res_by_price:
+        target_1 = unique_res_by_price[0][1]
+
+    # ── 第二目標（溫和）：更遠的壓力位或 Fibonacci 延伸 ──
+    if len(unique_res_by_price) >= 2:
+        for name, val, pri in unique_res_by_price[1:]:
+            if val - target_1 >= atr * 0.5:
+                target_2 = val
+                break
+    if target_2 == 0:
+        fib_candidate = fib_ext.get("1.272" if "1.272" in fib_ext else "1.000", 0)
+        if fib_candidate > target_1 + atr:
+            target_2 = fib_candidate
+
+    # fallback：沒有壓力位時用傳統風報比
+    if target_1 == 0:
+        target_1 = round(close + risk_per_share * 1.0, 2)
+    if target_2 == 0:
+        target_2 = round(close + risk_per_share * 2.0, 2)
+
+    # 合理範圍修正
+    target_1 = max(target_1, close * 1.01)
+    target_2 = max(target_2, target_1 * 1.01)
+    target_2 = min(target_2, close * 1.30)
+
+    result["target_1"] = round(target_1, 2)
+    result["target_2"] = round(target_2, 2)
+
+    # ── 混合風報比（60% T1 + 40% T2）──
     if risk_per_share > 0:
-        result["risk_reward_ratio"] = round(risk_per_share / risk_per_share, 2)  # =1.0 at TP1
-        # 更實用的風報比:潛在獲利 / 潛在虧損
-        gain_to_sl = (current_price - stop_loss)
-        gain_to_t1 = (result["target_1"] - current_price)
-        result["risk_reward_ratio"] = round(gain_to_t1 / gain_to_sl if gain_to_sl > 0 else 0, 2)
+        rr1 = (target_1 - close) / risk_per_share if risk_per_share > 0 else 0
+        rr2 = (target_2 - close) / risk_per_share if risk_per_share > 0 else 0
+        result["risk_reward_ratio"] = round(rr1 * 0.6 + rr2 * 0.4, 2)
 
-    # 進場區間建議
-    # 多頭排列 (MA5 > MA20 > MA60):拉回月線買
-    ma5 = latest.get("MA5", 0)
+    # ── 進場區間 ──
     if ma5 > ma20 > ma60 and ma60 > 0:
+        # 多頭排列
         result["entry_zone"] = "🟢 可進場"
-        if current_price > ma20 * 1.05:
-            result["entry_note"] = f"偏離月線 {(current_price/ma20-1)*100:.1f}%,建議等拉回 {ma20:.1f} 附近進場"
-        elif current_price < ma20 * 1.02:
-            result["entry_note"] = f"接近月線 {ma20:.1f},多頭格局可分批布局"
+        if close > ma20 * 1.05:
+            pct = (close / ma20 - 1) * 100
+            result["entry_note"] = f"偏離月線{pct:.1f}%,建議等拉回{ma20:.1f}~{ma20*(1+atr/close):.1f}(月線±ATR)附近進場"
         else:
-            result["entry_note"] = "均線多頭排列,可順勢操作"
-        result["support_level"] = ma20
+            result["entry_note"] = "均線多頭排列,建議分批布局。近20日低點: {:.2f},近60日低點: {:.2f}".format(low_20, low_60)
 
-    # 月線上、季線下 (短多中空)
-    elif current_price > ma20 and current_price < ma60:
+    elif close > ma20 and ma60 > 0 and close < ma60:
+        # 月線上、季線下
         result["entry_zone"] = "🟡 觀察"
-        result["entry_note"] = f"短線站上月線 {ma20:.0f} 但仍在季線 {ma60:.0f} 下,屬反彈格局,需站穩季線才安全"
-        result["support_level"] = ma20
-        result["resistance_level"] = ma60
+        result["entry_note"] = (
+            f"站上月線{ma20:.0f}但仍在季線{ma60:.0f}下,r反彈格局需站穩季線。"
+            f"支撐:月線{ma20:.0f}/近20日低點{low_20:.0f},壓力:季線{ma60:.0f}/近20日高點{high_20:.0f}"
+        )
 
-    # 都在線下 (空頭)
-    elif current_price < ma20 and current_price < ma60:
+    elif close < ma20 and close < ma60 and ma20 > 0:
+        # 空頭
         result["entry_zone"] = "🔴 不宜進場"
-        result["entry_note"] = f"價位在月線({ma20:.0f})和季線({ma60:.0f})之下,趨勢偏弱,建議等待站上月線再考慮"
+        result["entry_note"] = (
+            f"價位在月線{ma20:.0f}和季線{ma60:.0f}下,趨勢偏弱。"
+            f"建議等待站上月線{ma20:.0f}再考慮。"
+            f"壓力:月線{ma20:.0f}/近20日高點{high_20:.0f}"
+        )
         result["resistance_level"] = ma20
 
-    # 都在線上 (強多頭)
-    elif current_price > ma20 and current_price > ma60:
+    elif close > ma20 and close > ma60:
+        # 強多頭
         result["entry_zone"] = "🟢 可進場"
-        if ma20 > ma60:
-            result["entry_note"] = "均線多頭,順勢操作"
-        else:
-            result["entry_note"] = f"價位在均線上,但月線({ma20:.0f}) < 季線({ma60:.0f}),注意是否為反轉"
+        if atr > 0:
+            buy_low = primary_support
+            buy_high = min(close, primary_support + atr)
+            result["entry_note"] = (
+                f"均線之上偏多格局。買進區間參考: {buy_low:.2f}~{buy_high:.2f}。"
+                f"ATR={atr:.2f},停損參考: {stop_loss:.2f}"
+            )
 
     return result
 
@@ -779,15 +909,23 @@ def score_stock(stock_id: str, stock_name: str, months: int = 6, include_news: b
 
 
 def get_daily_picks(top_n: int = 5, months: int = 6, include_news: bool = True) -> list:
-    """掃描 50 檔重點股,回傳 Top N 推薦"""
+    """掃描 50 檔重點股,回傳 Top N 推薦（使用平行爬取提速）"""
     results = []
     total = len(SCAN_UNIVERSE)
+    max_workers = 12
 
-    for i, (sid, sname) in enumerate(SCAN_UNIVERSE.items()):
-        result = score_stock(sid, sname, months=months, include_news=include_news)
-        if result.error is None:
-            results.append(result)
-        time.sleep(0.12)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_map = {
+            executor.submit(score_stock, sid, sname, months=months, include_news=include_news): sid
+            for sid, sname in SCAN_UNIVERSE.items()
+        }
+        for future in as_completed(future_map):
+            try:
+                result = future.result(timeout=30)
+                if result.error is None:
+                    results.append(result)
+            except Exception:
+                pass
 
     results.sort(key=lambda x: x.total_score, reverse=True)
     return results[:top_n]

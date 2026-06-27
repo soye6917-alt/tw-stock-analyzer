@@ -1,7 +1,52 @@
-virtual_portfolio.json
+# Python
 __pycache__/
 *.pyc
-.DS_Store
-test_vt.py
-test_scan.py
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Credentials & personal data
+real_portfolio.json
 .env
+
+# Temp / generated
+temp_*.mp4
+frame_*.jpg
+skin_map.jpg
+
+# Optional: briefing history (your choice)
+memory/briefing/
+
+# Debug / temp scripts
+_*.py
+_*.js
+add_three_modes.py
+apply_low_price_edit.py
+check_*.py
+find_*.py
+fix_*.py
+rescan_fixed.py
+audit_modules.py
+test_*.py
+analyze_*.py
+
+# Logs + output
+logs/
+output/
+
+# Runtime
+streamlit_pid.txt
+qr_result.json
+
+# Backup
+app_bak_fornew.py
+
+# Config
+.streamlit/config.toml
+
+# OS files
+Thumbs.db
+.DS_Store
